@@ -281,20 +281,21 @@ function App() {
   const sidebar = (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-3 sm:p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h1 className="text-lg sm:text-xl font-bold text-gray-800 truncate">Notes</h1>
+      <div className="p-6 border-b border-gray-200 bg-white">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold text-gray-800 truncate">Notes</h1>
+          {/* Hide button on mobile (< 768px), show only on desktop */}
           <button
             onClick={createNewNote}
-            className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2 min-h-[44px] touch-manipulation"
+            className="hidden md:flex bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200 items-center gap-2 min-h-[48px] touch-manipulation shadow-sm flex-shrink-0"
           >
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span className="hidden xs:inline sm:inline">New Note</span>
+            <span>New Note</span>
           </button>
         </div>
-        <div className="text-xs sm:text-sm text-gray-500">
+        <div className="text-sm text-gray-500">
           {notes.length} {notes.length === 1 ? 'note' : 'notes'}
         </div>
       </div>
@@ -328,6 +329,7 @@ function App() {
         sidebar={sidebar}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={setSidebarOpen}
+        onCreateNewNote={createNewNote}
       >
         {currentNote ? (
           <RichTextEditor

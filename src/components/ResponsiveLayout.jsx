@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const ResponsiveLayout = ({ children, sidebar, onToggleSidebar, sidebarOpen = false }) => {
+const ResponsiveLayout = ({ children, sidebar, onToggleSidebar, sidebarOpen = false, onCreateNewNote }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   const [isSmallMobile, setIsSmallMobile] = useState(false);
@@ -53,8 +53,8 @@ const ResponsiveLayout = ({ children, sidebar, onToggleSidebar, sidebarOpen = fa
     <div className="flex h-screen bg-gray-50 relative overflow-hidden">
       {/* Mobile Header */}
       {isMobile && (
-        <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-30 px-3 py-2 sm:px-4 sm:py-3 safe-area-inset-top">
-          <div className="flex items-center justify-between">
+        <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-30 px-4 h-16 safe-area-inset-top shadow-sm">
+          <div className="flex items-center justify-between h-full">
             <button
               onClick={toggleSidebar}
               className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors touch-target min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -72,6 +72,23 @@ const ResponsiveLayout = ({ children, sidebar, onToggleSidebar, sidebarOpen = fa
         </div>
       )}
 
+      {/* Floating Add Button for Mobile (when sidebar is open) */}
+      {isMobile && sidebarOpen && onCreateNewNote && (
+        <button
+          onClick={onCreateNewNote}
+          className="fixed top-20 right-4 z-40 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-full p-3 shadow-lg transition-all duration-200 min-h-[56px] min-w-[56px] flex items-center justify-center touch-manipulation"
+          aria-label="Create new note"
+          style={{ 
+            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)',
+            transform: 'translateZ(0)' // Force hardware acceleration
+          }}
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      )}
+
       {/* Sidebar */}
       <div className={`
         ${isMobile ? 'fixed inset-y-0 left-0 z-20' : 'relative'}
@@ -83,7 +100,7 @@ const ResponsiveLayout = ({ children, sidebar, onToggleSidebar, sidebarOpen = fa
           'w-80 max-w-[400px]'
         }
         bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out
-        ${isMobile ? 'pt-14 sm:pt-16' : ''}
+        ${isMobile ? 'pt-20' : ''}
         flex flex-col
         ${isMobile ? 'safe-area-inset-top' : ''}
       `}>
@@ -103,7 +120,7 @@ const ResponsiveLayout = ({ children, sidebar, onToggleSidebar, sidebarOpen = fa
       {/* Main Content */}
       <div className={`
         flex-1 flex flex-col min-w-0
-        ${isMobile ? 'pt-14 sm:pt-16' : ''}
+        ${isMobile ? 'pt-16' : ''}
         ${isMobile ? 'safe-area-inset-top' : ''}
       `}>
         {children}

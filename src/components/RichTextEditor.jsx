@@ -190,8 +190,9 @@ const RichTextEditor = ({
   return (
     <div className="flex-1 flex flex-col bg-white">
       {/* Header */}
-      <div className={`border-b border-gray-200 ${isMobile ? 'p-3' : 'p-4'}`}>
-        <div className={`flex items-center justify-between mb-2 ${isMobile ? 'flex-col gap-3' : ''}`}>
+      <div className={`border-b border-gray-200 bg-white ${isMobile ? 'p-4 pt-6' : 'p-4'}`}>
+        {/* Title Section */}
+        <div className={`${isMobile ? 'mb-5' : 'mb-3'}`}>
           <input
             ref={titleRef}
             type="text"
@@ -200,83 +201,88 @@ const RichTextEditor = ({
             onKeyDown={handleTitleKeyDown}
             onBlur={saveChanges}
             className={`
-              ${isMobile ? 'text-xl w-full' : 'text-2xl flex-1 mr-4'} 
+              ${isMobile ? 'text-xl w-full text-center' : 'text-2xl w-full'} 
               font-bold text-gray-800 bg-transparent border-none outline-none placeholder-gray-400
-              ${isMobile ? 'text-center' : ''}
+              ${isMobile ? 'py-2' : 'py-1'}
             `}
             placeholder="Note title..."
-            style={{ fontSize: isMobile ? '16px' : undefined }} // Prevent zoom on iOS
+            style={{ fontSize: isMobile ? '18px' : undefined }} // Prevent zoom on iOS
           />
-          
-          {/* Action Buttons */}
-          <div className={`flex items-center gap-2 ${isMobile ? 'w-full justify-center flex-wrap' : ''}`}>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className={`${isMobile ? 'mb-5' : 'mb-3'}`}>
+          <div className={`flex items-center ${isMobile ? 'justify-center gap-4' : 'justify-end gap-2'}`}>
             {/* AI Button */}
             <button
               onClick={() => setAiEnabled(!aiEnabled)}
               className={`
-                ${isMobile ? 'p-3 min-h-[44px] min-w-[44px]' : 'p-2'} 
-                rounded-lg transition-colors flex items-center justify-center
+                ${isMobile ? 'px-4 py-3 min-h-[48px] min-w-[48px]' : 'p-2'} 
+                rounded-lg transition-colors flex items-center justify-center gap-2
                 ${aiEnabled 
                   ? 'bg-purple-100 text-purple-700 hover:bg-purple-200 active:bg-purple-300' 
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
                 }
+                ${isMobile ? 'shadow-sm' : ''}
               `}
               title={aiEnabled ? 'Disable AI glossary highlighting' : 'Enable AI glossary highlighting'}
             >
-              <svg className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
-              {isMobile && <span className="ml-2 text-sm">AI</span>}
+              {isMobile && <span className="text-sm font-medium">AI</span>}
             </button>
 
             {/* Save Button */}
             <button
               onClick={saveChanges}
               className={`
-                ${isMobile ? 'p-3 min-h-[44px] min-w-[44px]' : 'p-2'} 
-                rounded-lg transition-colors flex items-center justify-center
+                ${isMobile ? 'px-4 py-3 min-h-[48px] min-w-[48px]' : 'p-2'} 
+                rounded-lg transition-colors flex items-center justify-center gap-2
                 ${hasUnsavedChanges.current 
                   ? 'bg-green-100 text-green-700 hover:bg-green-200 active:bg-green-300' 
                   : 'bg-gray-100 text-gray-400'
                 }
+                ${isMobile ? 'shadow-sm' : ''}
               `}
               title="Save changes (Ctrl+S)"
             >
-              <svg className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
               </svg>
-              {isMobile && <span className="ml-2 text-sm">Save</span>}
+              {isMobile && <span className="text-sm font-medium">Save</span>}
             </button>
             
             {/* Encryption Button */}
             <button
               onClick={note.isEncrypted ? onDecryptNote : onEncryptNote}
               className={`
-                ${isMobile ? 'p-3 min-h-[44px] min-w-[44px]' : 'p-2'} 
-                rounded-lg transition-colors flex items-center justify-center
+                ${isMobile ? 'px-4 py-3 min-h-[48px] min-w-[48px]' : 'p-2'} 
+                rounded-lg transition-colors flex items-center justify-center gap-2
                 ${note.isEncrypted 
                   ? 'bg-red-100 text-red-700 hover:bg-red-200 active:bg-red-300' 
                   : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 active:bg-yellow-300'
                 }
+                ${isMobile ? 'shadow-sm' : ''}
               `}
               title={note.isEncrypted ? 'Decrypt note' : 'Encrypt note'}
             >
-              <svg className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {note.isEncrypted ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                 ) : (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 )}
               </svg>
-              {isMobile && <span className="ml-2 text-sm">{note.isEncrypted ? 'Decrypt' : 'Encrypt'}</span>}
+              {isMobile && <span className="text-sm font-medium">{note.isEncrypted ? 'Decrypt' : 'Encrypt'}</span>}
             </button>
           </div>
         </div>
 
         {/* Note Info */}
-        <div className={`flex items-center justify-between text-sm text-gray-500 ${isMobile ? 'flex-col gap-2' : ''}`}>
-          <div className={`flex items-center gap-2 ${isMobile ? 'flex-wrap justify-center' : 'gap-4'}`}>
-            <span className={isSmallMobile ? 'text-xs' : 'text-sm'}>
+        <div className={`flex items-center justify-between text-sm text-gray-500 ${isMobile ? 'flex-col gap-3' : ''}`}>
+          <div className={`flex items-center ${isMobile ? 'flex-wrap justify-center gap-2' : 'gap-4'}`}>
+            <span className={`${isSmallMobile ? 'text-xs' : 'text-sm'} ${isMobile ? 'text-center' : ''}`}>
               {isMobile ? 'Updated' : 'Last updated'}: {formatDate(note.updatedAt)}
             </span>
             {hasUnsavedChanges.current && (
@@ -292,7 +298,7 @@ const RichTextEditor = ({
           </div>
           
           {/* Statistics */}
-          <div className={`flex items-center gap-2 text-xs ${isMobile ? 'flex-wrap justify-center' : 'gap-4'}`}>
+          <div className={`flex items-center text-xs ${isMobile ? 'justify-center gap-3' : 'gap-4'}`}>
             <span>{getWordCount()} words</span>
             <span>{getCharacterCount()} chars</span>
             <span>{getReadingTime()} min read</span>
