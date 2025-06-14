@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin }) => {
+const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin, onEncryptNote }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   const handleDeleteClick = (e, noteId) => {
@@ -22,6 +22,11 @@ const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin
   const handlePinClick = (e, noteId) => {
     e.stopPropagation();
     onTogglePin(noteId);
+  };
+
+  const handleEncryptClick = (e, noteId) => {
+    e.stopPropagation();
+    onEncryptNote?.(noteId);
   };
 
   const formatDate = (dateString) => {
@@ -57,12 +62,16 @@ const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin
     }
   };
 
-  const getPreviewText = (htmlContent) => {
-    if (!htmlContent) return 'No additional text';
+  const getPreviewText = (note) => {
+    if (note.isEncrypted) {
+      return '🔒 This note is encrypted';
+    }
+    
+    if (!note.content) return 'No additional text';
     
     // Create a temporary div to strip HTML tags
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlContent;
+    tempDiv.innerHTML = note.content;
     const textContent = tempDiv.textContent || tempDiv.innerText || '';
     
     // Return first 100 characters
@@ -79,7 +88,7 @@ const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin
     <div
       key={note.id}
       onClick={() => onSelectNote(note)}
-      className={`p-4 border-b border-gray-100 cursor-pointer transition-colors duration-200 hover:bg-gray-50 ${
+      className={`p-4 border-b border-gray-100 cursor-pointer transition-colors duration-200 hover:bg-gray-50 relative ${
         currentNote && currentNote.id === note.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
       }`}
     >
@@ -90,12 +99,37 @@ const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin
               <path d="M16 12V4a1 1 0 0 0-.5-.87L12 1 8.5 3.13A1 1 0 0 0 8 4v8H5a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h6v5a1 1 0 0 0 2 0v-5h6a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-3z"/>
             </svg>
           )}
+          {note.isEncrypted && (
+            <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          )}
           <h3 className="font-medium text-gray-800 truncate flex-1">
             {note.title}
           </h3>
         </div>
         
         <div className="flex items-center gap-1 ml-2">
+          {/* Encryption Button */}
+          {onEncryptNote && (
+            <button
+              onClick={(e) => handleEncryptClick(e, note.id)}
+              className={`p-1 rounded hover:bg-gray-200 transition-colors duration-200 ${
+                note.isEncrypted ? 'text-red-500' : 'text-gray-400'
+              }`}
+              title={note.isEncrypted ? 'Decrypt note' : 'Encrypt note'}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {note.isEncrypted ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                )}
+              </svg>
+            </button>
+          )}
+
+          {/* Pin Button */}
           <button
             onClick={(e) => handlePinClick(e, note.id)}
             className={`p-1 rounded hover:bg-gray-200 transition-colors duration-200 ${
@@ -108,6 +142,7 @@ const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin
             </svg>
           </button>
           
+          {/* Delete Button */}
           {showDeleteConfirm === note.id ? (
             <div className="flex items-center gap-1">
               <button
@@ -143,12 +178,17 @@ const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin
         </div>
       </div>
       
-      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-        {getPreviewText(note.content)}
+      <p className={`text-sm mb-2 line-clamp-2 ${
+        note.isEncrypted ? 'text-red-600 italic' : 'text-gray-600'
+      }`}>
+        {getPreviewText(note)}
       </p>
       
-      <div className="text-xs text-gray-400">
-        {formatDate(note.updatedAt)}
+      <div className="flex items-center justify-between text-xs text-gray-400">
+        <span>{formatDate(note.updatedAt)}</span>
+        {note.wordCount > 0 && (
+          <span>{note.wordCount} words</span>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import aiService from '../services/aiService';
 
-const GlossaryHighlighter = ({ children }) => {
+const SafeGlossaryHighlighter = ({ children }) => {
   const containerRef = useRef(null);
   const [tooltip, setTooltip] = useState({ show: false, content: '', x: 0, y: 0 });
   const [aiTerms, setAiTerms] = useState({});
@@ -11,10 +11,34 @@ const GlossaryHighlighter = ({ children }) => {
   const highlightTimer = useRef(null);
   const lastProcessedText = useRef('');
   const isHighlighting = useRef(false);
+  const editorObserver = useRef(null);
 
   useEffect(() => {
+    const processWithAI = async (text) => {
+      if (isProcessing || !text || text.length < 30) return;
+      
+      setIsProcessing(true);
+      try {
+        console.log('Processing text with AI:', text.substring(0, 50) + '...');
+        const newTerms = await aiService.extractAndDefineTerms(text);
+        
+        if (newTerms && Object.keys(newTerms).length > 0) {
+          console.log('AI found terms:', Object.keys(newTerms));
+          setAiTerms(newTerms);
+        } else {
+          console.log('No AI terms found');
+          setAiTerms({});
+        }
+      } catch (error) {
+        console.warn('AI processing failed:', error);
+        setAiTerms({});
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
     const highlightTerms = async () => {
-      // Don't highlight if user is typing or if we're already highlighting
+      // Don't highlight if user is typing or already highlighting
       if (isUserTyping.current || isHighlighting.current) return;
       
       if (!containerRef.current) return;
@@ -26,7 +50,7 @@ const GlossaryHighlighter = ({ children }) => {
       if (document.activeElement === editorElement) return;
 
       const textContent = editorElement.textContent || '';
-      if (!textContent.trim() || textContent.length < 20) return;
+      if (!textContent.trim() || textContent.length < 30) return;
 
       // Check if we need to process with AI
       const shouldProcessAI = textContent !== lastProcessedText.current && textContent.length > 50;
@@ -66,7 +90,7 @@ const GlossaryHighlighter = ({ children }) => {
           const regex = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
           const newHtml = modifiedHtml.replace(regex, (match) => {
             hasChanges = true;
-            return `<span class="ai-glossary-term" data-term="${term}">${match}</span>`;
+            return `<span class="ai-glossary-term" data-term="${term}" style="background-color: rgba(59, 130, 246, 0.1); border-bottom: 1px dotted #3b82f6; cursor: help; transition: background-color 0.2s ease;">${match}</span>`;
           });
           modifiedHtml = newHtml;
         });
@@ -100,29 +124,6 @@ const GlossaryHighlighter = ({ children }) => {
       }
     };
 
-    const processWithAI = async (text) => {
-      if (isProcessing || !text || text.length < 20) return;
-      
-      setIsProcessing(true);
-      try {
-        console.log('Processing text with AI:', text.substring(0, 50) + '...');
-        const newTerms = await aiService.extractAndDefineTerms(text);
-        
-        if (newTerms && Object.keys(newTerms).length > 0) {
-          console.log('AI found terms:', Object.keys(newTerms));
-          setAiTerms(newTerms);
-        } else {
-          console.log('No AI terms found');
-          setAiTerms({});
-        }
-      } catch (error) {
-        console.warn('AI processing failed:', error);
-        setAiTerms({});
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-
     const handleUserInput = () => {
       // Mark user as typing
       isUserTyping.current = true;
@@ -131,14 +132,22 @@ const GlossaryHighlighter = ({ children }) => {
       if (typingTimer.current) clearTimeout(typingTimer.current);
       if (highlightTimer.current) clearTimeout(highlightTimer.current);
       
-      // DON'T modify innerHTML while user is typing - this was causing the data loss!
+      // Remove highlights while typing to prevent cursor issues
+      const editorElement = containerRef.current?.querySelector('[contenteditable]');
+      if (editorElement && !isHighlighting.current) {
+        const htmlContent = editorElement.innerHTML;
+        const cleanHtml = htmlContent.replace(/<span class="ai-glossary-term"[^>]*>([^<]+)<\/span>/gi, '$1');
+        if (cleanHtml !== htmlContent) {
+          editorElement.innerHTML = cleanHtml;
+        }
+      }
       
       // Set timer to stop typing detection
       typingTimer.current = setTimeout(() => {
         isUserTyping.current = false;
         // Schedule highlighting after user stops typing
-        highlightTimer.current = setTimeout(highlightTerms, 2000);
-      }, 1500);
+        highlightTimer.current = setTimeout(highlightTerms, 3000);
+      }, 2000);
     };
 
     const handleBlur = () => {
@@ -146,7 +155,7 @@ const GlossaryHighlighter = ({ children }) => {
       
       // Highlight terms after user stops editing (with delay)
       if (highlightTimer.current) clearTimeout(highlightTimer.current);
-      highlightTimer.current = setTimeout(highlightTerms, 1500);
+      highlightTimer.current = setTimeout(highlightTerms, 2000);
     };
 
     const handleFocus = () => {
@@ -156,7 +165,7 @@ const GlossaryHighlighter = ({ children }) => {
       // Clear any pending highlights
       if (highlightTimer.current) clearTimeout(highlightTimer.current);
       
-      // Remove highlights when user starts editing (but preserve content)
+      // Remove highlights when user starts editing
       const editorElement = containerRef.current?.querySelector('[contenteditable]');
       if (editorElement && !isHighlighting.current) {
         const htmlContent = editorElement.innerHTML;
@@ -191,6 +200,35 @@ const GlossaryHighlighter = ({ children }) => {
       }
     };
 
+    // Set up mutation observer to detect when editor content changes
+    const setupObserver = () => {
+      const editorElement = containerRef.current?.querySelector('[contenteditable]');
+      if (editorElement && !editorObserver.current) {
+        editorObserver.current = new MutationObserver((mutations) => {
+          // Only react to mutations that aren't from our highlighting
+          const isFromHighlighting = mutations.some(mutation => 
+            mutation.type === 'childList' && 
+            Array.from(mutation.addedNodes).some(node => 
+              node.nodeType === Node.ELEMENT_NODE && 
+              node.classList?.contains('ai-glossary-term')
+            )
+          );
+          
+          if (!isFromHighlighting && !isUserTyping.current && !isHighlighting.current) {
+            // Content changed from outside, schedule highlighting
+            if (highlightTimer.current) clearTimeout(highlightTimer.current);
+            highlightTimer.current = setTimeout(highlightTerms, 1000);
+          }
+        });
+        
+        editorObserver.current.observe(editorElement, {
+          childList: true,
+          subtree: true,
+          characterData: true
+        });
+      }
+    };
+
     const container = containerRef.current;
     if (container) {
       const editorElement = container.querySelector('[contenteditable]');
@@ -204,12 +242,15 @@ const GlossaryHighlighter = ({ children }) => {
         editorElement.addEventListener('blur', handleBlur);
         editorElement.addEventListener('focus', handleFocus);
         
-        // Initial highlight after a longer delay to ensure editor is ready
+        // Set up mutation observer
+        setupObserver();
+        
+        // Initial highlight after a delay to ensure editor is ready
         setTimeout(() => {
           if (document.activeElement !== editorElement && !isUserTyping.current) {
             highlightTerms();
           }
-        }, 3000);
+        }, 4000);
 
         return () => {
           container.removeEventListener('mouseover', handleMouseOver);
@@ -221,6 +262,10 @@ const GlossaryHighlighter = ({ children }) => {
           
           if (typingTimer.current) clearTimeout(typingTimer.current);
           if (highlightTimer.current) clearTimeout(highlightTimer.current);
+          if (editorObserver.current) {
+            editorObserver.current.disconnect();
+            editorObserver.current = null;
+          }
         };
       }
     }
@@ -264,26 +309,19 @@ const GlossaryHighlighter = ({ children }) => {
         </div>
       )}
       
-      {/* CSS for highlighting */}
+      {/* CSS for animations */}
       <style jsx>{`
-        .ai-glossary-term {
-          background-color: rgba(59, 130, 246, 0.1);
-          border-bottom: 1px dotted #3b82f6;
-          cursor: help;
-          transition: background-color 0.2s ease;
-        }
-        
-        .ai-glossary-term:hover {
-          background-color: rgba(59, 130, 246, 0.2);
-        }
-        
         @keyframes fadeIn {
           from { opacity: 0; transform: translate(-50%, -100%) scale(0.95); }
           to { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+        }
+        
+        .ai-glossary-term:hover {
+          background-color: rgba(59, 130, 246, 0.2) !important;
         }
       `}</style>
     </div>
   );
 };
 
-export default GlossaryHighlighter;
+export default SafeGlossaryHighlighter;
