@@ -29,18 +29,40 @@
   color: #d1d5db;
 }
 
-/* Glossary term highlighting */
-.glossary-term {
-  background-color: #fef3c7;
-  border-bottom: 2px dotted #f59e0b;
+/* AI Glossary term highlighting */
+.ai-glossary-term {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-bottom: 2px dotted #3b82f6;
   cursor: help;
-  padding: 1px 2px;
-  border-radius: 2px;
-  transition: background-color 0.2s ease;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
 }
 
-.glossary-term:hover {
-  background-color: #fde68a;
+.ai-glossary-term:hover {
+  background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+  border-bottom-color: #1d4ed8;
+}
+
+/* Pulse animation for newly highlighted terms */
+@keyframes highlightPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.ai-glossary-term.newly-highlighted {
+  animation: highlightPulse 1s ease-out;
 }
 
 /* Scrollbar styling */
@@ -126,4 +148,29 @@ input:focus-visible {
 
 .tooltip-animate {
   animation: tooltipFadeIn 0.2s ease-out;
-} 
+}
+
+/* AI processing indicator animation */
+@keyframes ai-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.ai-processing {
+  animation: ai-pulse 2s ease-in-out infinite;
+}
+
+/* Loading spinner for AI processing */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
