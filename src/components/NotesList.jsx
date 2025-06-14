@@ -1,7 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin, onEncryptNote }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isSmallMobile, setIsSmallMobile] = useState(false);
+
+  // Check screen size for responsive behavior
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      setIsSmallMobile(width < 480);
+      setIsMobile(width < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    window.addEventListener('orientationchange', checkScreenSize);
+    
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+      window.removeEventListener('orientationchange', checkScreenSize);
+    };
+  }, []);
 
   const handleDeleteClick = (e, noteId) => {
     e.stopPropagation();
@@ -88,38 +108,45 @@ const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin
     <div
       key={note.id}
       onClick={() => onSelectNote(note)}
-      className={`p-4 border-b border-gray-100 cursor-pointer transition-colors duration-200 hover:bg-gray-50 relative ${
-        currentNote && currentNote.id === note.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-      }`}
+      className={`
+        ${isMobile ? 'p-4' : 'p-4'} 
+        border-b border-gray-100 cursor-pointer transition-colors duration-200 
+        hover:bg-gray-50 active:bg-gray-100 relative
+        ${isMobile ? 'touch-manipulation' : ''}
+        ${currentNote && currentNote.id === note.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}
+      `}
     >
-      <div className="flex items-start justify-between mb-2">
+      <div className={`flex items-start justify-between mb-2 ${isMobile ? 'gap-3' : ''}`}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {isPinned && (
-            <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+            <svg className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} text-amber-500 flex-shrink-0`} fill="currentColor" viewBox="0 0 24 24">
               <path d="M16 12V4a1 1 0 0 0-.5-.87L12 1 8.5 3.13A1 1 0 0 0 8 4v8H5a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h6v5a1 1 0 0 0 2 0v-5h6a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-3z"/>
             </svg>
           )}
           {note.isEncrypted && (
-            <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} text-red-500 flex-shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           )}
-          <h3 className="font-medium text-gray-800 truncate flex-1">
+          <h3 className={`font-medium text-gray-800 truncate flex-1 ${isMobile ? 'text-base' : 'text-sm'}`}>
             {note.title}
           </h3>
         </div>
         
-        <div className="flex items-center gap-1 ml-2">
+        <div className={`flex items-center ${isMobile ? 'gap-2 ml-2' : 'gap-1 ml-2'}`}>
           {/* Encryption Button */}
           {onEncryptNote && (
             <button
               onClick={(e) => handleEncryptClick(e, note.id)}
-              className={`p-1 rounded hover:bg-gray-200 transition-colors duration-200 ${
-                note.isEncrypted ? 'text-red-500' : 'text-gray-400'
-              }`}
+              className={`
+                ${isMobile ? 'p-2 min-h-[44px] min-w-[44px]' : 'p-1'} 
+                rounded hover:bg-gray-200 active:bg-gray-300 transition-colors duration-200 
+                flex items-center justify-center
+                ${note.isEncrypted ? 'text-red-500' : 'text-gray-400'}
+              `}
               title={note.isEncrypted ? 'Decrypt note' : 'Encrypt note'}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {note.isEncrypted ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                 ) : (
@@ -132,34 +159,45 @@ const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin
           {/* Pin Button */}
           <button
             onClick={(e) => handlePinClick(e, note.id)}
-            className={`p-1 rounded hover:bg-gray-200 transition-colors duration-200 ${
-              note.isPinned ? 'text-amber-500' : 'text-gray-400'
-            }`}
+            className={`
+              ${isMobile ? 'p-2 min-h-[44px] min-w-[44px]' : 'p-1'} 
+              rounded hover:bg-gray-200 active:bg-gray-300 transition-colors duration-200 
+              flex items-center justify-center
+              ${note.isPinned ? 'text-amber-500' : 'text-gray-400'}
+            `}
             title={note.isPinned ? 'Unpin note' : 'Pin note'}
           >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <svg className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} fill="currentColor" viewBox="0 0 24 24">
               <path d="M16 12V4a1 1 0 0 0-.5-.87L12 1 8.5 3.13A1 1 0 0 0 8 4v8H5a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h6v5a1 1 0 0 0 2 0v-5h6a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-3z"/>
             </svg>
           </button>
           
           {/* Delete Button */}
           {showDeleteConfirm === note.id ? (
-            <div className="flex items-center gap-1">
+            <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-1'}`}>
               <button
                 onClick={(e) => confirmDelete(e, note.id)}
-                className="p-1 rounded bg-red-100 text-red-600 hover:bg-red-200 transition-colors duration-200"
+                className={`
+                  ${isMobile ? 'p-2 min-h-[44px] min-w-[44px]' : 'p-1'} 
+                  rounded bg-red-100 text-red-600 hover:bg-red-200 active:bg-red-300 
+                  transition-colors duration-200 flex items-center justify-center
+                `}
                 title="Confirm delete"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </button>
               <button
                 onClick={cancelDelete}
-                className="p-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors duration-200"
+                className={`
+                  ${isMobile ? 'p-2 min-h-[44px] min-w-[44px]' : 'p-1'} 
+                  rounded bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 
+                  transition-colors duration-200 flex items-center justify-center
+                `}
                 title="Cancel delete"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </button>
@@ -167,10 +205,14 @@ const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin
           ) : (
             <button
               onClick={(e) => handleDeleteClick(e, note.id)}
-              className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors duration-200"
+              className={`
+                ${isMobile ? 'p-2 min-h-[44px] min-w-[44px]' : 'p-1'} 
+                rounded text-gray-400 hover:text-red-500 hover:bg-red-50 active:bg-red-100 
+                transition-colors duration-200 flex items-center justify-center
+              `}
               title="Delete note"
             >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <svg className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
               </svg>
             </button>
@@ -178,13 +220,15 @@ const NotesList = ({ notes, currentNote, onSelectNote, onDeleteNote, onTogglePin
         </div>
       </div>
       
-      <p className={`text-sm mb-2 line-clamp-2 ${
-        note.isEncrypted ? 'text-red-600 italic' : 'text-gray-600'
-      }`}>
+      <p className={`
+        ${isMobile ? 'text-sm mb-3' : 'text-sm mb-2'} 
+        line-clamp-2 
+        ${note.isEncrypted ? 'text-red-600 italic' : 'text-gray-600'}
+      `}>
         {getPreviewText(note)}
       </p>
       
-      <div className="flex items-center justify-between text-xs text-gray-400">
+      <div className={`flex items-center justify-between text-xs text-gray-400 ${isMobile ? 'text-sm' : ''}`}>
         <span>{formatDate(note.updatedAt)}</span>
         {note.wordCount > 0 && (
           <span>{note.wordCount} words</span>

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import TextFormatToolbar from './TextFormatToolbar';
-import SafeGlossaryHighlighter from './SafeGlossaryHighlighter';
+import AIGlossaryHighlighter from './AIGlossaryHighlighter';
 
 const RichTextEditor = ({ 
   note, 
@@ -13,10 +13,31 @@ const RichTextEditor = ({
   onDecryptNote
 }) => {
   const [title, setTitle] = useState(note.title);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isSmallMobile, setIsSmallMobile] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
   const editorRef = useRef(null);
   const titleRef = useRef(null);
   const currentNoteId = useRef(note.id);
   const hasUnsavedChanges = useRef(false);
+
+  // Check screen size for responsive behavior
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      setIsSmallMobile(width < 480);
+      setIsMobile(width < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    window.addEventListener('orientationchange', checkScreenSize);
+    
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+      window.removeEventListener('orientationchange', checkScreenSize);
+    };
+  }, []);
 
   // Only update when note actually changes (different note selected)
   useEffect(() => {
@@ -169,8 +190,8 @@ const RichTextEditor = ({
   return (
     <div className="flex-1 flex flex-col bg-white">
       {/* Header */}
-      <div className="border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between mb-2">
+      <div className={`border-b border-gray-200 ${isMobile ? 'p-3' : 'p-4'}`}>
+        <div className={`flex items-center justify-between mb-2 ${isMobile ? 'flex-col gap-3' : ''}`}>
           <input
             ref={titleRef}
             type="text"
@@ -178,52 +199,86 @@ const RichTextEditor = ({
             onChange={handleTitleChange}
             onKeyDown={handleTitleKeyDown}
             onBlur={saveChanges}
-            className="text-2xl font-bold text-gray-800 bg-transparent border-none outline-none placeholder-gray-400 flex-1 mr-4"
+            className={`
+              ${isMobile ? 'text-xl w-full' : 'text-2xl flex-1 mr-4'} 
+              font-bold text-gray-800 bg-transparent border-none outline-none placeholder-gray-400
+              ${isMobile ? 'text-center' : ''}
+            `}
             placeholder="Note title..."
+            style={{ fontSize: isMobile ? '16px' : undefined }} // Prevent zoom on iOS
           />
           
           {/* Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${isMobile ? 'w-full justify-center flex-wrap' : ''}`}>
+            {/* AI Button */}
+            <button
+              onClick={() => setAiEnabled(!aiEnabled)}
+              className={`
+                ${isMobile ? 'p-3 min-h-[44px] min-w-[44px]' : 'p-2'} 
+                rounded-lg transition-colors flex items-center justify-center
+                ${aiEnabled 
+                  ? 'bg-purple-100 text-purple-700 hover:bg-purple-200 active:bg-purple-300' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
+                }
+              `}
+              title={aiEnabled ? 'Disable AI glossary highlighting' : 'Enable AI glossary highlighting'}
+            >
+              <svg className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              {isMobile && <span className="ml-2 text-sm">AI</span>}
+            </button>
+
             {/* Save Button */}
             <button
               onClick={saveChanges}
-              className={`p-2 rounded-lg transition-colors ${
-                hasUnsavedChanges.current 
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+              className={`
+                ${isMobile ? 'p-3 min-h-[44px] min-w-[44px]' : 'p-2'} 
+                rounded-lg transition-colors flex items-center justify-center
+                ${hasUnsavedChanges.current 
+                  ? 'bg-green-100 text-green-700 hover:bg-green-200 active:bg-green-300' 
                   : 'bg-gray-100 text-gray-400'
-              }`}
+                }
+              `}
               title="Save changes (Ctrl+S)"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
               </svg>
+              {isMobile && <span className="ml-2 text-sm">Save</span>}
             </button>
             
             {/* Encryption Button */}
             <button
               onClick={note.isEncrypted ? onDecryptNote : onEncryptNote}
-              className={`p-2 rounded-lg transition-colors ${
-                note.isEncrypted 
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                  : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-              }`}
+              className={`
+                ${isMobile ? 'p-3 min-h-[44px] min-w-[44px]' : 'p-2'} 
+                rounded-lg transition-colors flex items-center justify-center
+                ${note.isEncrypted 
+                  ? 'bg-red-100 text-red-700 hover:bg-red-200 active:bg-red-300' 
+                  : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 active:bg-yellow-300'
+                }
+              `}
               title={note.isEncrypted ? 'Decrypt note' : 'Encrypt note'}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`${isMobile ? 'w-6 h-6' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {note.isEncrypted ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                 ) : (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 )}
               </svg>
+              {isMobile && <span className="ml-2 text-sm">{note.isEncrypted ? 'Decrypt' : 'Encrypt'}</span>}
             </button>
           </div>
         </div>
 
         {/* Note Info */}
-        <div className="flex items-center justify-between text-sm text-gray-500">
-          <div className="flex items-center gap-4">
-            <span>Last updated: {formatDate(note.updatedAt)}</span>
+        <div className={`flex items-center justify-between text-sm text-gray-500 ${isMobile ? 'flex-col gap-2' : ''}`}>
+          <div className={`flex items-center gap-2 ${isMobile ? 'flex-wrap justify-center' : 'gap-4'}`}>
+            <span className={isSmallMobile ? 'text-xs' : 'text-sm'}>
+              {isMobile ? 'Updated' : 'Last updated'}: {formatDate(note.updatedAt)}
+            </span>
             {hasUnsavedChanges.current && (
               <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs">
                 Unsaved changes
@@ -236,10 +291,10 @@ const RichTextEditor = ({
             )}
           </div>
           
-          {/* Statistics - Always Shown */}
-          <div className="flex items-center gap-4 text-xs">
+          {/* Statistics */}
+          <div className={`flex items-center gap-2 text-xs ${isMobile ? 'flex-wrap justify-center' : 'gap-4'}`}>
             <span>{getWordCount()} words</span>
-            <span>{getCharacterCount()} characters</span>
+            <span>{getCharacterCount()} chars</span>
             <span>{getReadingTime()} min read</span>
           </div>
         </div>
@@ -249,37 +304,51 @@ const RichTextEditor = ({
       <TextFormatToolbar onApplyFormat={applyFormat} editorRef={editorRef} />
 
       {/* Editor */}
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-3' : 'p-4'}`}>
         {note.isEncrypted ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className={`text-center ${isMobile ? 'px-4' : ''}`}>
+              <div className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center`}>
+                <svg className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} text-red-600`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Note is Encrypted</h3>
-              <p className="text-gray-500 mb-4">This note is password protected. Click the decrypt button to view its contents.</p>
+              <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-700 mb-2`}>
+                Note is Encrypted
+              </h3>
+              <p className={`text-gray-500 mb-4 ${isMobile ? 'text-sm' : ''}`}>
+                This note is password protected. Click the decrypt button to view its contents.
+              </p>
               <button
                 onClick={onDecryptNote}
-                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors"
+                className={`
+                  bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-lg transition-colors
+                  ${isMobile ? 'px-4 py-3 text-sm min-h-[44px]' : 'px-6 py-2'}
+                `}
               >
                 Decrypt Note
               </button>
             </div>
           </div>
         ) : (
-          <SafeGlossaryHighlighter>
+          <AIGlossaryHighlighter isEnabled={aiEnabled} onToggle={setAiEnabled}>
             <div
               ref={editorRef}
               contentEditable
-              className={`min-h-full w-full outline-none text-gray-700 leading-relaxed ${
-                preferences.fontFamily === 'serif' ? 'font-serif' : 
-                preferences.fontFamily === 'mono' ? 'font-mono' : 'font-sans'
-              }`}
+              className={`
+                min-h-full w-full outline-none text-gray-700 leading-relaxed
+                ${preferences.fontFamily === 'serif' ? 'font-serif' : 
+                  preferences.fontFamily === 'mono' ? 'font-mono' : 'font-sans'
+                }
+                ${isMobile ? 'touch-manipulation' : ''}
+              `}
               style={{ 
-                minHeight: '400px',
-                fontSize: `${preferences.fontSize || 16}px`
+                minHeight: isMobile ? '300px' : '400px',
+                fontSize: `${preferences.fontSize || (isMobile ? 16 : 16)}px`,
+                lineHeight: isMobile ? '1.6' : '1.5',
+                WebkitTouchCallout: 'none',
+                WebkitUserSelect: 'text',
+                userSelect: 'text'
               }}
               onInput={handleInput}
               onKeyDown={handleKeyDown}
@@ -288,7 +357,7 @@ const RichTextEditor = ({
               placeholder="Start writing your note..."
               spellCheck={preferences.enableSpellCheck !== false}
             />
-          </SafeGlossaryHighlighter>
+          </AIGlossaryHighlighter>
         )}
       </div>
     </div>

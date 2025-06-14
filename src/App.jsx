@@ -281,20 +281,20 @@ function App() {
   const sidebar = (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-gray-800">Notes</h1>
+      <div className="p-3 sm:p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-800 truncate">Notes</h1>
           <button
             onClick={createNewNote}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2 min-h-[44px] touch-manipulation"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span className="hidden sm:inline">New Note</span>
+            <span className="hidden xs:inline sm:inline">New Note</span>
           </button>
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-xs sm:text-sm text-gray-500">
           {notes.length} {notes.length === 1 ? 'note' : 'notes'}
         </div>
       </div>
@@ -326,6 +326,7 @@ function App() {
     <div className="h-screen overflow-hidden">
       <ResponsiveLayout
         sidebar={sidebar}
+        sidebarOpen={sidebarOpen}
         onToggleSidebar={setSidebarOpen}
       >
         {currentNote ? (
