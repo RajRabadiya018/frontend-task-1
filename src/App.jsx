@@ -49,7 +49,7 @@ function App() {
     loadData();
   }, []);
 
-  // Save to storage whenever notes change (but not auto-save during editing)
+  // Save to storage whenever notes change 
   useEffect(() => {
     if (notes.length > 0) {
       try {
