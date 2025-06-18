@@ -92,7 +92,7 @@ function App() {
     setSidebarOpen(false);
   };
 
-  // Simple updateNote function - no auto-save conflicts
+  // Simple updateNote function 
   const updateNote = useCallback((noteId, updates) => {
     // Calculate word and character count if content is updated
     if (updates.content !== undefined) {

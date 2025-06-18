@@ -39,7 +39,7 @@ const RichTextEditor = ({
     };
   }, []);
 
-  // Only update when note actually changes (different note selected)
+  // Only update when note actually changes 
   useEffect(() => {
     if (note.id !== currentNoteId.current) {
       // Save previous note if there were unsaved changes
@@ -121,7 +121,7 @@ const RichTextEditor = ({
     if (e.ctrlKey || e.metaKey) {
       switch (e.key) {
         case 'b':
-          e.preventDefault();
+          e.preventDefault(); 
           applyFormat('bold');
           break;
         case 'i':
@@ -233,25 +233,7 @@ const RichTextEditor = ({
               {isMobile && <span className="text-sm font-medium">AI</span>}
             </button>
 
-            {/* Save Button */}
-            <button
-              onClick={saveChanges}
-              className={`
-                ${isMobile ? 'px-4 py-3 min-h-[48px] min-w-[48px]' : 'p-2'} 
-                rounded-lg transition-colors flex items-center justify-center gap-2
-                ${hasUnsavedChanges.current 
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200 active:bg-green-300' 
-                  : 'bg-gray-100 text-gray-400'
-                }
-                ${isMobile ? 'shadow-sm' : ''}
-              `}
-              title="Save changes (Ctrl+S)"
-            >
-              <svg className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-              </svg>
-              {isMobile && <span className="text-sm font-medium">Save</span>}
-            </button>
+            
             
             {/* Encryption Button */}
             <button
