@@ -44,9 +44,9 @@ The app works with a built-in glossary, but AI features provide enhanced term de
 
 #### Configure Your API Key:
 1. Open the `.env` file in the project root
-2. Replace `your_google_gemini_api_key_here` with your actual API key:
+2. Replace your actual API key:
 ```env
-VITE_GOOGLE_GEMINI_API_KEY=AIzaSyC-your_actual_api_key_here
+VITE_GOOGLE_GEMINI_API_KEY=your_actual_api_key_here
 VITE_USE_FALLBACK=true
 ```
 
