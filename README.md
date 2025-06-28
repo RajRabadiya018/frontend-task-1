@@ -2,6 +2,8 @@
 
 A modern, feature-rich note-taking application with AI-powered auto glossary highlighting, built with React and Tailwind CSS.
 
+## Deployment: https://playpowerlab-frontend-task-1.netlify.app/
+
 ## Features
 
 ### Core Functionality
